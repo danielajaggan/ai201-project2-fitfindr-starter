@@ -97,9 +97,9 @@ For each tool, describe the specific failure mode you're handling and what the a
 
 | Tool | Failure mode | Agent response |
 |------|-------------|----------------|
-| search_listings | No results match the query | |
-| suggest_outfit | Wardrobe is empty | |
-| create_fit_card | Outfit input is missing or incomplete | |
+| search_listings | No results match the query | Returns an empty list. The agent sets session["error"] to a message like "No listings found matching your search. Try a different size, a higher price range, or different keywords." and returns immediately without calling suggest_outfit or create_fit_card. Tested with query "designer ballgown size XXS under $5" — confirmed this exact error message was returned. |
+| suggest_outfit | Wardrobe is empty | The tool still calls the LLM, but with a prompt asking for general styling advice instead of wardrobe-specific pairings. It returns a non-empty string with general suggestions rather than crashing or returning an empty string.|
+| create_fit_card | Outfit input is missing or incomplete |  If outfit is empty or whitespace-only, the tool returns the string "Unable to generate a fit card: no outfit suggestion was provided." without calling the LLM at all.|
 
 ---
 
@@ -131,11 +131,11 @@ For each tool, describe the specific failure mode you're handling and what the a
      search_listings() using load_listings() from the data loader — then test it against 3 queries
      before trusting it" is a plan. -->
 
-I'll give Claude my Tool 1 spec (inputs, return value, failure mode) and ask it to implement search_listings to filter by description, size and max_price.  I'll verify by checking that it handles the empty-results case and testing it with at least 3 different search queries.
+     I'll give Claude my Tool 1 spec (inputs, return value, failure mode) and ask it to implement search_listings to filter by description, size and max_price.  I'll verify by checking that it handles the empty-results case and testing it with at least 3 different search queries.
 
-I'll give Claude my Tool 2 spec along with wardrobe schema and ask it to implement suggest_outfit to match the next items by categpry , color, styletag. I'll verify by testing with the example wardrobe and confirming the output references actual wardrobe items, not generic suggestions.
+     I'll give Claude my Tool 2 spec along with wardrobe schema and ask it to implement suggest_outfit to match the next items by categpry , color, styletag. I'll verify by testing with the example wardrobe and confirming the output references actual wardrobe items, not generic suggestions.
 
-I'll give Claude my Tool 3 spec and ask it to implement `create_fit_card`, combining the outfit suggestion and listing details into a formatted string. I'll verify by checking the output includes the item title, price, platform, and styling suggestion, and that it handles missing fields
+     I'll give Claude my Tool 3 spec and ask it to implement create_fit_card, combining the outfit suggestion and listing details into a formatted string. I'll verify by checking the output includes the item title, price, platform, and styling suggestion, and that it handles missing fields
 
 
 **Milestone 3 — Individual tool implementations:**
